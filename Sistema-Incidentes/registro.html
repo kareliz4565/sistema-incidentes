@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Sistema de Incidentes</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Importamos la librería de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>📝 REGISTRO DE USUARIO</h1>
+                <p>Crea una cuenta para el sistema</p>
+            </div>
+
+            <!-- FORMULARIO DE REGISTRO -->
+            <form id="register-form">
+                <div class="input-group">
+                    <label for="reg-nombre">Nombre Completo:</label>
+                    <input type="text" id="reg-nombre" placeholder="Karen Alvarado" required>
+                </div>
+                <div class="input-group">
+                    <label for="reg-correo">Correo:</label>
+                    <input type="email" id="reg-correo" placeholder="nuevo@empresa.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="reg-contrasena">Contraseña:</label>
+                    <input type="password" id="reg-contrasena" placeholder="********" required>
+                </div>
+                <button type="submit" class="btn-ingresar">Registrarse</button>
+            </form>
+
+            <!-- Enlace para volver al Login -->
+            <p class="toggle-text">
+                ¿Ya tienes cuenta? 
+                <a href="index.html">Inicia sesión aquí</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

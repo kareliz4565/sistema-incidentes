@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prioridades - Sistema de Incidentes</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="dashboard-body">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            🛡️ <span>SGI Ciberseguridad</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
+            <a href="incidentes.html" class="nav-item">🚨 Incidentes</a>
+            <a href="categorias.html" class="nav-item">📁 Categorías</a>
+            <a href="prioridades.html" class="nav-item active">⚡ Prioridades</a>
+            <a href="estados.html" class="nav-item">🔖 Estados</a>
+            <a href="activos.html" class="nav-item">💻 Activos</a>
+            <a href="usuarios.html" class="nav-item">👥 Usuarios</a>
+        </nav>
+        <button onclick="cerrarSesion()" class="sidebar-logout">🚪 Cerrar Sesión</button>
+    </aside>
+
+    <!-- ===== CONTENIDO PRINCIPAL ===== -->
+    <main class="main-content">
+        <header class="top-header">
+            <h1>⚡ Gestión de Prioridades</h1>
+            <div class="user-info">
+                <span id="nombre-usuario">Cargando...</span>
+                <div class="user-avatar" id="user-avatar">?</div>
+            </div>
+        </header>
+
+        <!-- Formulario para crear prioridad -->
+        <section class="form-section">
+            <h2>Nueva Prioridad</h2>
+            <form id="form-prioridad">
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" id="nombre" placeholder="Ej: Crítica" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="nivel">Nivel:</label>
+                        <select id="nivel" required>
+                            <option value="">Seleccione...</option>
+                            <option value="Baja">Baja</option>
+                            <option value="Media">Media</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Critica">Crítica</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="descripcion">Descripción:</label>
+                        <input type="text" id="descripcion" placeholder="Ej: Atención inmediata" required>
+                    </div>
+                    <button type="submit" class="btn-primary">➕ Agregar</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Tabla de prioridades -->
+        <section class="table-section">
+            <h2>Prioridades Registradas</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Nivel</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-prioridades">
+                    <tr><td colspan="5" style="text-align:center;">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="prioridades.js"></script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sistema de Incidentes</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="dashboard-body">
+
+    <!-- ===== BARRA LATERAL (SIDEBAR) ===== -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            🛡️ <span>SGI Ciberseguridad</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item active">📊 Dashboard</a>
+            <a href="incidentes.html" class="nav-item">🚨 Incidentes</a>
+            <a href="categorias.html" class="nav-item">📁 Categorías</a>
+            <a href="prioridades.html" class="nav-item">⚡ Prioridades</a>
+            <a href="estados.html" class="nav-item">🔖 Estados</a>
+            <a href="activos.html" class="nav-item">💻 Activos</a>
+            <a href="usuarios.html" class="nav-item">👥 Usuarios</a>
+        </nav>
+
+        <button onclick="cerrarSesion()" class="sidebar-logout">🚪 Cerrar Sesión</button>
+    </aside>
+
+    <!-- ===== CONTENIDO PRINCIPAL ===== -->
+    <main class="main-content">
+
+        <!-- Encabezado -->
+        <header class="top-header">
+            <h1>Panel de Control</h1>
+            <div class="user-info">
+                <span id="nombre-usuario">Cargando...</span>
+                <div class="user-avatar" id="user-avatar">?</div>
+            </div>
+        </header>
+
+        <!-- Tarjetas de Indicadores -->
+        <section class="cards-grid">
+            <div class="card card-blue">
+                <div class="card-icon">📋</div>
+                <div class="card-info">
+                    <h3 id="total-incidentes">0</h3>
+                    <p>Total Incidentes</p>
+                </div>
+            </div>
+            <div class="card card-red">
+                <div class="card-icon">🚨</div>
+                <div class="card-info">
+                    <h3 id="incidentes-criticos">0</h3>
+                    <p>Incidentes Críticos</p>
+                </div>
+            </div>
+            <div class="card card-yellow">
+                <div class="card-icon">⏳</div>
+                <div class="card-info">
+                    <h3 id="incidentes-abiertos">0</h3>
+                    <p>Incidentes Abiertos</p>
+                </div>
+            </div>
+            <div class="card card-green">
+                <div class="card-icon">✅</div>
+                <div class="card-info">
+                    <h3 id="incidentes-cerrados">0</h3>
+                    <p>Incidentes Cerrados</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Bienvenida -->
+        <section class="welcome-panel">
+            <h2>Bienvenido/a al Sistema de Gestión de Incidentes 🛡️</h2>
+            <p>Desde este panel puedes gestionar todos los incidentes de ciberseguridad de tu empresa. Utiliza el menú lateral para navegar entre los módulos.</p>
+            <p><strong>Tu rol:</strong> <span id="rol-usuario">Usuario</span></p>
+        </section>
+
+    </main>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

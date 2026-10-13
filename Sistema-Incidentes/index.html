@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Incidentes</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Importamos la librería de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>🛡️ SISTEMA DE GESTIÓN DE<br>INCIDENTES DE CIBERSEGURIDAD</h1>
+                <p>Gestión y priorización de amenazas</p>
+            </div>
+
+            <!-- FORMULARIO DE LOGIN -->
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="correo">Correo:</label>
+                    <input type="email" id="correo" placeholder="usuario@empresa.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="contrasena">Contraseña:</label>
+                    <input type="password" id="contrasena" placeholder="********" required>
+                </div>
+                <button type="submit" class="btn-ingresar">Ingresar</button>
+            </form>
+
+            <!-- Enlace a la página de Registro -->
+            <p class="toggle-text">
+                ¿No tienes cuenta? 
+                <a href="registro.html">Regístrate aquí</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
