@@ -646,3 +646,14 @@ body.dashboard-body {
 .users-summary {
     margin-top: 15px;
 }
+/* ==========================================
+   ESTILOS DE ESTADOS
+   ========================================== */
+.card-abierto { border-left-color: #ef4444; }
+.card-proceso { border-left-color: #eab308; }
+.card-cerrado { border-left-color: #22c55e; }
+
+/* Reutilizamos las clases de priority-card */
+.card-critica { border-left-color: #ef4444; }
+.card-media { border-left-color: #eab308; }
+.card-baja { border-left-color: #22c55e; }
