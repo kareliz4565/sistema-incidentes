@@ -1,123 +1,140 @@
-// ==========================================
-// CONFIGURACIÓN DE SUPABASE
-// ==========================================
-const SUPABASE_URL = "https://czaasfgyblmswnjxxbrn.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6YWFzZmd5Ymxtc3duanh4YnJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3ODE0NjcsImV4cCI6MjEwNzM1NzQ2N30.oJiflCwgpODN760TcyNCHDg6mjJwzNNQpCmn4375y1g";
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estados - Sistema de Incidentes</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="dashboard-body">
 
-// ==========================================
-// 1. VERIFICAR SESIÓN
-// ==========================================
-const usuarioGuardado = localStorage.getItem('usuarioLogueado');
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">🛡️ <span>SGI Ciberseguridad</span></div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
+            <a href="incidentes.html" class="nav-item">🚨 Incidentes</a>
+            <a href="categorias.html" class="nav-item">📁 Categorías</a>
+            <a href="prioridades.html" class="nav-item">⚡ Prioridades</a>
+            <a href="estados.html" class="nav-item active">🔖 Estados</a>
+            <a href="activos.html" class="nav-item">💻 Activos</a>
+            <a href="usuarios.html" class="nav-item">👥 Usuarios</a>
+        </nav>
+        <button onclick="cerrarSesion()" class="sidebar-logout">🚪 Cerrar Sesión</button>
+    </aside>
 
-if (!usuarioGuardado) {
-    alert('⚠️ Debes iniciar sesión primero.');
-    window.location.href = 'index.html';
-} else {
-    const usuario = JSON.parse(usuarioGuardado);
-    document.getElementById('nombre-usuario').textContent = usuario.nombre;
-    document.getElementById('user-avatar').textContent = usuario.nombre.charAt(0).toUpperCase();
-}
+    <!-- CONTENIDO -->
+    <main class="main-content">
+        <header class="top-header">
+            <h1>🔖 Ciclo de Vida de los Incidentes</h1>
+            <div class="user-info">
+                <span id="nombre-usuario">Cargando...</span>
+                <div class="user-avatar" id="user-avatar">?</div>
+            </div>
+        </header>
 
-// ==========================================
-// 2. CERRAR SESIÓN
-// ==========================================
-function cerrarSesion() {
-    localStorage.removeItem('usuarioLogueado');
-    alert('👋 Has cerrado sesión exitosamente.');
-    window.location.href = 'index.html';
-}
+        <!-- RECUADROS DE ESTADO -->
+        <section class="form-section">
+            <h2>📊 Resumen por Estado</h2>
+            <div class="priority-cards">
+                <div class="priority-card card-critica" onclick="filtrarPorEstado('Abierto')">
+                    <div class="priority-icon">🔓</div>
+                    <div class="priority-info">
+                        <h3 id="count-abierto">0</h3>
+                        <p>Abiertos</p>
+                        <span class="sla">Requieren atención</span>
+                    </div>
+                </div>
+                <div class="priority-card card-media" onclick="filtrarPorEstado('En proceso')">
+                    <div class="priority-icon">🔄</div>
+                    <div class="priority-info">
+                        <h3 id="count-proceso">0</h3>
+                        <p>En Proceso</p>
+                        <span class="sla">En investigación</span>
+                    </div>
+                </div>
+                <div class="priority-card card-baja" onclick="filtrarPorEstado('Cerrado')">
+                    <div class="priority-icon">✅</div>
+                    <div class="priority-info">
+                        <h3 id="count-cerrado">0</h3>
+                        <p>Cerrados</p>
+                        <span class="sla">Resueltos</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-// ==========================================
-// 3. CARGAR ESTADOS (LISTAR)
-// ==========================================
-async function cargarEstados() {
-    const { data, error } = await supabaseClient
-        .from('estado')
-        .select('*')
-        .order('id_estado', { ascending: true });
+        <!-- TABLA DE INCIDENTES POR ESTADO -->
+        <section class="table-section">
+            <div class="table-header">
+                <h2>🚨 Incidentes por Estado</h2>
+                <div class="filters">
+                    <select id="filtro-estado-incidente">
+                        <option value="">Todos los estados</option>
+                        <option value="Abierto">🔓 Abierto</option>
+                        <option value="En proceso">🔄 En Proceso</option>
+                        <option value="Cerrado">✅ Cerrado</option>
+                    </select>
+                    <button type="button" class="btn-secondary" onclick="limpiarFiltro()">🔄 Limpiar</button>
+                </div>
+            </div>
 
-    const tbody = document.getElementById('tabla-estados');
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Estado</th>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Categoría</th>
+                        <th>Prioridad</th>
+                        <th>Responsable</th>
+                        <th>Fecha Reporte</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-estados-incidentes">
+                    <tr><td colspan="8" style="text-align:center;">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </section>
 
-    if (error) {
-        console.error('Error al cargar:', error);
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#ef4444;">Error al cargar estados</td></tr>`;
-        return;
-    }
+        <!-- CATÁLOGO DE ESTADOS -->
+        <section class="form-section" style="margin-top: 40px;">
+            <h2>⚙️ Catálogo de Estados</h2>
+            <form id="form-estado">
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="nombre">Nombre del estado:</label>
+                        <input type="text" id="nombre" placeholder="Ej: Abierto" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="descripcion">Descripción:</label>
+                        <input type="text" id="descripcion" placeholder="Ej: Incidente reportado" required>
+                    </div>
+                    <button type="submit" class="btn-primary">➕ Agregar</button>
+                </div>
+            </form>
+        </section>
 
-    if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No hay estados registrados aún.</td></tr>`;
-        return;
-    }
+        <section class="table-section">
+            <h2>📋 Estados Registrados</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-estados">
+                    <tr><td colspan="4" style="text-align:center;">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
 
-    tbody.innerHTML = data.map(e => `
-        <tr>
-            <td>${e.id_estado}</td>
-            <td>${e.nombre}</td>
-            <td>${e.descripcion || '-'}</td>
-            <td>
-                <button class="btn-delete" onclick="eliminarEstado(${e.id_estado})">🗑️ Eliminar</button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-// ==========================================
-// 4. CREAR ESTADO (INSERTAR)
-// ==========================================
-document.getElementById('form-estado').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const nombre = document.getElementById('nombre').value.trim();
-    const descripcion = document.getElementById('descripcion').value.trim();
-
-    // Verificar duplicados
-    const { data: existente } = await supabaseClient
-        .from('estado')
-        .select('nombre')
-        .eq('nombre', nombre)
-        .single();
-
-    if (existente) {
-        alert('⚠️ Ya existe un estado con ese nombre.');
-        return;
-    }
-
-    // Insertar en Supabase
-    const { error } = await supabaseClient
-        .from('estado')
-        .insert([{ nombre: nombre, descripcion: descripcion }]);
-
-    if (error) {
-        alert('❌ Error al agregar: ' + error.message);
-    } else {
-        alert('✅ Estado agregado exitosamente.');
-        document.getElementById('form-estado').reset();
-        cargarEstados();
-    }
-});
-
-// ==========================================
-// 5. ELIMINAR ESTADO
-// ==========================================
-async function eliminarEstado(id) {
-    const confirmar = confirm('¿Estás segura de eliminar este estado?');
-    if (!confirmar) return;
-
-    const { error } = await supabaseClient
-        .from('estado')
-        .delete()
-        .eq('id_estado', id);
-
-    if (error) {
-        alert('❌ Error al eliminar: ' + error.message);
-    } else {
-        alert('✅ Estado eliminado.');
-        cargarEstados();
-    }
-}
-
-// ==========================================
-// 6. EJECUTAR AL CARGAR LA PÁGINA
-// ==========================================
-cargarEstados();
+    <script src="estados.js"></script>
+</body>
+</html>
