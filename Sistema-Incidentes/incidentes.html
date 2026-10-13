@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incidentes - Sistema de Incidentes</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="dashboard-body">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            🛡️ <span>SGI Ciberseguridad</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
+            <a href="incidentes.html" class="nav-item active">🚨 Incidentes</a>
+            <a href="categorias.html" class="nav-item">📁 Categorías</a>
+            <a href="prioridades.html" class="nav-item">⚡ Prioridades</a>
+            <a href="estados.html" class="nav-item">🔖 Estados</a>
+            <a href="activos.html" class="nav-item">💻 Activos</a>
+            <a href="usuarios.html" class="nav-item">👥 Usuarios</a>
+        </nav>
+        <button onclick="cerrarSesion()" class="sidebar-logout">🚪 Cerrar Sesión</button>
+    </aside>
+
+    <!-- ===== CONTENIDO PRINCIPAL ===== -->
+    <main class="main-content">
+        <header class="top-header">
+            <h1>🚨 Gestión de Incidentes</h1>
+            <div class="user-info">
+                <span id="nombre-usuario">Cargando...</span>
+                <div class="user-avatar" id="user-avatar">?</div>
+            </div>
+        </header>
+
+        <!-- Formulario para registrar incidente -->
+        <section class="form-section">
+            <h2>Reportar Nuevo Incidente</h2>
+            <form id="form-incidente">
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="titulo">Título del incidente:</label>
+                        <input type="text" id="titulo" placeholder="Ej: Correo sospechoso de banco" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group" style="flex: 1 1 100%;">
+                        <label for="descripcion">Descripción detallada:</label>
+                        <textarea id="descripcion" rows="3" placeholder="Describe qué sucedió, cuándo y cómo lo detectaste..." required></textarea>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="id_categoria">Categoría:</label>
+                        <select id="id_categoria" required>
+                            <option value="">Seleccione...</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="id_prioridad">Prioridad:</label>
+                        <select id="id_prioridad" required>
+                            <option value="">Seleccione...</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="id_estado">Estado inicial:</label>
+                        <select id="id_estado" required>
+                            <option value="">Seleccione...</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="id_activo">Activo afectado:</label>
+                        <select id="id_activo" required>
+                            <option value="">Seleccione...</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">💾 Registrar</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Filtros y Tabla -->
+        <section class="table-section">
+            <div class="table-header">
+                <h2>Listado de Incidentes</h2>
+                <div class="filters">
+                    <select id="filtro-prioridad">
+                        <option value="">Todas las prioridades</option>
+                    </select>
+                    <select id="filtro-estado">
+                        <option value="">Todos los estados</option>
+                    </select>
+                    <button type="button" class="btn-secondary" onclick="limpiarFiltros()">🔄 Limpiar</button>
+                </div>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Categoría</th>
+                        <th>Prioridad</th>
+                        <th>Estado</th>
+                        <th>Activo</th>
+                        <th>Reportado por</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-incidentes">
+                    <tr><td colspan="9" style="text-align:center;">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="incidentes.js"></script>
+</body>
+</html>
