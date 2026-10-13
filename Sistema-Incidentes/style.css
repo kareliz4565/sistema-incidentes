@@ -471,3 +471,88 @@ body {
     flex-direction: column; 
   }
 }
+/* ==========================================
+   ESTILOS DEL MÓDULO INCIDENTES
+   ========================================== */
+
+/* Textarea */
+.input-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: #0f172a;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.input-group textarea:focus {
+    outline: none;
+    border-color: #38bdf8;
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+}
+
+/* Cabecera de tabla con filtros */
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.table-header h2 {
+    color: #38bdf8;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filters select {
+    padding: 8px 12px;
+    background-color: #0f172a;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background-color: #334155;
+    color: #cbd5e1;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.btn-secondary:hover {
+    background-color: #475569;
+}
+
+/* Botón cambiar estado */
+.btn-action {
+    background-color: #0369a1;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-right: 5px;
+}
+
+.btn-action:hover {
+    background-color: #0284c7;
+}
