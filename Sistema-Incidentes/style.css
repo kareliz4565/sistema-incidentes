@@ -639,3 +639,10 @@ body.dashboard-body {
 .card-alta { border-left-color: #f97316; }
 .card-media { border-left-color: #eab308; }
 .card-baja { border-left-color: #22c55e; }
+
+/* ==========================================
+   RESUMEN DE USUARIOS
+   ========================================== */
+.users-summary {
+    margin-top: 15px;
+}
