@@ -449,3 +449,25 @@ body {
     background-color: #7f1d1d;
     color: #fca5a5;
 }
+
+/* Esto aplica solo para celulares y tablets */
+@media (max-width: 768px) {
+  /* 1. Hacer que el menú lateral se ponga arriba o se oculte */
+  .sidebar { 
+    width: 100%; /* Ocupa todo el ancho */
+    position: relative; 
+    /* O podrías ocultarlo y usar un botón de menú hamburguesa */
+  }
+
+  /* 2. El contenido principal que ocupe todo el ancho */
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 10px;
+  }
+
+  /* 3. Las tarjetas que se pongan una debajo de otra */
+  .contenedor-tarjetas {
+    flex-direction: column; 
+  }
+}
