@@ -1,4 +1,6 @@
-/* Reset básico */
+/* ==========================================
+   1. RESET BÁSICO Y ESTILOS GLOBALES
+   ========================================== */
 * {
     margin: 0;
     padding: 0;
@@ -6,9 +8,12 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Fondo de la pantalla */
+/* ==========================================
+   2. ESTILOS DE LOGIN Y REGISTRO
+   ========================================== */
+/* Fondo de la pantalla de Login */
 body {
-    background-color: #0f172a; /* Azul muy oscuro, casi negro */
+    background-color: #0f172a;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -16,16 +21,14 @@ body {
     color: #e2e8f0;
 }
 
-/* Contenedor principal */
 .login-container {
     width: 100%;
     max-width: 450px;
     padding: 20px;
 }
 
-/* Caja de Login */
 .login-box {
-    background-color: #1e293b; /* Gris azulado oscuro */
+    background-color: #1e293b;
     padding: 40px 30px;
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
@@ -33,10 +36,9 @@ body {
     text-align: center;
 }
 
-/* Encabezado */
 .login-header h1 {
     font-size: 1.2rem;
-    color: #38bdf8; /* Azul cian brillante */
+    color: #38bdf8;
     margin-bottom: 10px;
     line-height: 1.4;
     letter-spacing: 1px;
@@ -44,11 +46,10 @@ body {
 
 .login-header p {
     font-size: 0.9rem;
-    color: #94a3b8; /* Gris claro */
+    color: #94a3b8;
     margin-bottom: 30px;
 }
 
-/* Campos de entrada */
 .input-group {
     text-align: left;
     margin-bottom: 20px;
@@ -73,18 +74,16 @@ body {
     transition: all 0.3s ease;
 }
 
-/* Efecto al hacer clic en un campo */
 .input-group input:focus {
     outline: none;
     border-color: #38bdf8;
     box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
 }
 
-/* Botón de Ingresar */
 .btn-ingresar {
     width: 100%;
     padding: 14px;
-    background-color: #0284c7; /* Azul sólido */
+    background-color: #0284c7;
     color: white;
     border: none;
     border-radius: 6px;
@@ -96,13 +95,13 @@ body {
 }
 
 .btn-ingresar:hover {
-    background-color: #0369a1; /* Azul un poco más oscuro al pasar el mouse */
+    background-color: #0369a1;
 }
 
 .btn-ingresar:active {
-    transform: scale(0.98); /* Efecto de clic */
+    transform: scale(0.98);
 }
-/* Estilo para el texto de alternar Login/Registro */
+
 .toggle-text {
     margin-top: 20px;
     font-size: 0.9rem;
@@ -118,16 +117,20 @@ body {
 .toggle-text a:hover {
     text-decoration: underline;
 }
-/* ==========================================
-   ESTILOS DEL DASHBOARD
-   ========================================== */
 
+/* ==========================================
+   3. ESTILOS DEL DASHBOARD (CORREGIDO)
+   ========================================== */
 .dashboard-body {
-    display: flex;
+    display: block !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
     margin: 0;
     padding: 0;
     background-color: #0f172a;
     min-height: 100vh;
+    height: auto !important;
+    overflow-x: hidden;
 }
 
 /* --- SIDEBAR --- */
@@ -139,17 +142,18 @@ body {
     flex-direction: column;
     padding: 20px 0;
     position: fixed;
-    top: 0;        /* Anclado arriba */
-    left: 0;       /* Anclado a la izquierda */
+    top: 0;
+    left: 0;
     height: 100vh;
-    z-index: 1000; /* Se asegura de estar por encima de todo */
+    z-index: 1000;
+    overflow-y: auto;
 }
 
 .sidebar-logo {
     font-size: 1.1rem;
     color: #38bdf8;
     font-weight: bold;
-    padding: 0 20px 20px;
+    padding: 10px 20px 20px;
     border-bottom: 1px solid #334155;
     margin-bottom: 20px;
     display: flex;
@@ -204,9 +208,9 @@ body {
 /* --- CONTENIDO PRINCIPAL --- */
 .main-content {
     margin-left: 250px;
-    flex: 1;
     padding: 30px;
     width: calc(100% - 250px);
+    min-height: 100vh;
 }
 
 .top-header {
@@ -243,7 +247,7 @@ body {
     font-size: 1.1rem;
 }
 
-/* --- TARJETAS --- */
+/* --- TARJETAS DEL DASHBOARD --- */
 .cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -305,10 +309,10 @@ body {
     margin-bottom: 10px;
     line-height: 1.6;
 }
-/* ==========================================
-   ESTILOS DE FORMULARIOS Y TABLAS (CRUDs)
-   ========================================== */
 
+/* ==========================================
+   4. ESTILOS DE FORMULARIOS Y TABLAS (CRUDs)
+   ========================================== */
 .form-section, .table-section {
     background-color: #1e293b;
     border-radius: 12px;
@@ -398,11 +402,10 @@ body {
 .btn-delete:hover {
     background-color: #991b1b;
 }
-/* ==========================================
-   ESTILOS ADICIONALES PARA PRIORIDADES
-   ========================================== */
 
-/* Select estilizado (dropdown) */
+/* ==========================================
+   5. ESTILOS ADICIONALES (Selects y Badges)
+   ========================================== */
 .input-group select {
     width: 100%;
     padding: 12px 15px;
@@ -450,32 +453,44 @@ body {
     color: #fca5a5;
 }
 
-/* Esto aplica solo para celulares y tablets */
-@media (max-width: 768px) {
-  /* 1. Hacer que el menú lateral se ponga arriba o se oculte */
-  .sidebar { 
-    width: 100%; /* Ocupa todo el ancho */
-    position: relative; 
-    /* O podrías ocultarlo y usar un botón de menú hamburguesa */
-  }
-
-  /* 2. El contenido principal que ocupe todo el ancho */
-  .main-content {
-    margin-left: 0;
-    width: 100%;
-    padding: 10px;
-  }
-
-  /* 3. Las tarjetas que se pongan una debajo de otra */
-  .contenedor-tarjetas {
-    flex-direction: column; 
-  }
-}
 /* ==========================================
-   ESTILOS DEL MÓDULO INCIDENTES
+   6. RESPONSIVE (Celulares y Tablets)
    ========================================== */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        position: relative;
+        height: auto;
+    }
 
-/* Textarea */
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 10px;
+    }
+
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .top-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .form-row {
+        flex-direction: column;
+    }
+
+    .form-row .input-group {
+        width: 100%;
+    }
+}
+
+/* ==========================================
+   7. ESTILOS DEL MÓDULO INCIDENTES
+   ========================================== */
 .input-group textarea {
     width: 100%;
     padding: 12px 15px;
@@ -555,4 +570,16 @@ body {
 
 .btn-action:hover {
     background-color: #0284c7;
+}
+
+/* ==========================================
+   8. FIX FINAL: Evitar scroll automático al cargar
+   ========================================== */
+html, body {
+    scroll-behavior: auto;
+    overflow-anchor: none;
+}
+
+body.dashboard-body {
+    overflow-y: auto;
 }
