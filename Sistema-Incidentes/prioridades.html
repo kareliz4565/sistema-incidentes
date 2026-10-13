@@ -9,11 +9,9 @@
 </head>
 <body class="dashboard-body">
 
-    <!-- ===== SIDEBAR ===== -->
+    <!-- SIDEBAR -->
     <aside class="sidebar">
-        <div class="sidebar-logo">
-            🛡️ <span>SGI Ciberseguridad</span>
-        </div>
+        <div class="sidebar-logo">🛡️ <span>SGI Ciberseguridad</span></div>
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
             <a href="incidentes.html" class="nav-item">🚨 Incidentes</a>
@@ -26,59 +24,87 @@
         <button onclick="cerrarSesion()" class="sidebar-logout">🚪 Cerrar Sesión</button>
     </aside>
 
-    <!-- ===== CONTENIDO PRINCIPAL ===== -->
+    <!-- CONTENIDO -->
     <main class="main-content">
         <header class="top-header">
-            <h1>⚡ Gestión de Prioridades</h1>
+            <h1>⚡ Priorización de Incidentes</h1>
             <div class="user-info">
                 <span id="nombre-usuario">Cargando...</span>
                 <div class="user-avatar" id="user-avatar">?</div>
             </div>
         </header>
 
-        <!-- Formulario para crear prioridad -->
+        <!-- RECUADROS DE PRIORIDAD -->
         <section class="form-section">
-            <h2>Nueva Prioridad</h2>
-            <form id="form-prioridad">
-                <div class="form-row">
-                    <div class="input-group">
-                        <label for="nombre">Nombre:</label>
-                        <input type="text" id="nombre" placeholder="Ej: Crítica" required>
+            <h2>📊 Resumen por Prioridad</h2>
+            <div class="priority-cards">
+                <div class="priority-card card-critica" onclick="filtrarPorPrioridad('Critica')">
+                    <div class="priority-icon">🔴</div>
+                    <div class="priority-info">
+                        <h3 id="count-critica">0</h3>
+                        <p>Crítica</p>
+                        <span class="sla">⏱️ SLA: 1 hora</span>
                     </div>
-                    <div class="input-group">
-                        <label for="nivel">Nivel:</label>
-                        <select id="nivel" required>
-                            <option value="">Seleccione...</option>
-                            <option value="Baja">Baja</option>
-                            <option value="Media">Media</option>
-                            <option value="Alta">Alta</option>
-                            <option value="Critica">Crítica</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label for="descripcion">Descripción:</label>
-                        <input type="text" id="descripcion" placeholder="Ej: Atención inmediata" required>
-                    </div>
-                    <button type="submit" class="btn-primary">➕ Agregar</button>
                 </div>
-            </form>
+                <div class="priority-card card-alta" onclick="filtrarPorPrioridad('Alta')">
+                    <div class="priority-icon">🟠</div>
+                    <div class="priority-info">
+                        <h3 id="count-alta">0</h3>
+                        <p>Alta</p>
+                        <span class="sla">⏱️ SLA: 4 horas</span>
+                    </div>
+                </div>
+                <div class="priority-card card-media" onclick="filtrarPorPrioridad('Media')">
+                    <div class="priority-icon">🟡</div>
+                    <div class="priority-info">
+                        <h3 id="count-media">0</h3>
+                        <p>Media</p>
+                        <span class="sla">⏱️ SLA: 24 horas</span>
+                    </div>
+                </div>
+                <div class="priority-card card-baja" onclick="filtrarPorPrioridad('Baja')">
+                    <div class="priority-icon">🟢</div>
+                    <div class="priority-info">
+                        <h3 id="count-baja">0</h3>
+                        <p>Baja</p>
+                        <span class="sla">⏱️ SLA: 72 horas</span>
+                    </div>
+                </div>
+            </div>
         </section>
 
-        <!-- Tabla de prioridades -->
+        <!-- TABLA DE INCIDENTES -->
         <section class="table-section">
-            <h2>Prioridades Registradas</h2>
+            <div class="table-header">
+                <h2>🚨 Incidentes por Prioridad</h2>
+                <div class="filters">
+                    <select id="filtro-nivel-prioridad">
+                        <option value="">Todas las prioridades</option>
+                        <option value="Critica">🔴 Crítica</option>
+                        <option value="Alta">🟠 Alta</option>
+                        <option value="Media">🟡 Media</option>
+                        <option value="Baja">🟢 Baja</option>
+                    </select>
+                    <button type="button" class="btn-secondary" onclick="limpiarFiltro()">🔄 Limpiar</button>
+                </div>
+            </div>
+
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th>Prioridad</th>
                         <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Nivel</th>
-                        <th>Descripción</th>
-                        <th>Acciones</th>
+                        <th>Título</th>
+                        <th>Categoría</th>
+                        <th>Activo</th>
+                        <th>Riesgo</th>
+                        <th>Estado</th>
+                        <th>⏱️ SLA</th>
+                        <th>💡 Recomendación</th>
                     </tr>
                 </thead>
-                <tbody id="tabla-prioridades">
-                    <tr><td colspan="5" style="text-align:center;">Cargando...</td></tr>
+                <tbody id="tabla-prioridades-incidentes">
+                    <tr><td colspan="9" style="text-align:center;">Cargando...</td></tr>
                 </tbody>
             </table>
         </section>
