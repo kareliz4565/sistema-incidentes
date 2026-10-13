@@ -6,6 +6,8 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let usuarioActual = null;
+let activosCache = [];
+let prioridadesCache = [];
 
 // ==========================================
 // 1. VERIFICAR SESIÓN
@@ -21,9 +23,6 @@ if (!usuarioGuardado) {
     document.getElementById('user-avatar').textContent = usuarioActual.nombre.charAt(0).toUpperCase();
 }
 
-// ==========================================
-// 2. CERRAR SESIÓN
-// ==========================================
 function cerrarSesion() {
     localStorage.removeItem('usuarioLogueado');
     alert('👋 Has cerrado sesión exitosamente.');
@@ -31,60 +30,104 @@ function cerrarSesion() {
 }
 
 // ==========================================
-// 3. CARGAR DROPDOWNS DINÁMICAMENTE
+// 2. MOTOR INTELIGENTE: CÁLCULO DE RIESGO Y PRIORIDAD
 // ==========================================
-async function cargarDropdowns() {
-    // --- Categorías ---
-    const { data: categorias } = await supabaseClient
-        .from('categoria').select('*').order('nombre');
-    
-    const selectCat = document.getElementById('id_categoria');
-    if (categorias) {
-        categorias.forEach(c => {
-            selectCat.innerHTML += `<option value="${c.id_categoria}">${c.nombre}</option>`;
-        });
+function calcularRiesgo(impacto, probabilidad, criticidadActivo) {
+    // MATRIZ DE RIESGO BASE
+    const matriz = {
+        'Bajo':  { 'Baja': 'Bajo',   'Media': 'Bajo',   'Alta': 'Medio'  },
+        'Medio': { 'Baja': 'Bajo',   'Media': 'Medio',  'Alta': 'Alto'   },
+        'Alto':  { 'Baja': 'Medio',  'Media': 'Alto',   'Alta': 'Critico'}
+    };
+
+    let riesgo = matriz[impacto]?.[probabilidad] || 'Bajo';
+
+    // AJUSTE POR CRITICIDAD DEL ACTIVO
+    const niveles = ['Bajo', 'Medio', 'Alto', 'Critico'];
+    let indice = niveles.indexOf(riesgo);
+
+    if (criticidadActivo === 'Baja') indice -= 1;
+    else if (criticidadActivo === 'Alta') indice += 1;
+    else if (criticidadActivo === 'Critica') indice += 2;
+
+    // Limitar entre 0 y 3
+    indice = Math.max(0, Math.min(3, indice));
+    return niveles[indice];
+}
+
+function riesgoAPrioridad(riesgo) {
+    const mapa = { 'Bajo': 'Baja', 'Medio': 'Media', 'Alto': 'Alta', 'Critico': 'Critica' };
+    return mapa[riesgo] || 'Baja';
+}
+
+function actualizarPrioridadCalculada() {
+    const impacto = document.getElementById('impacto').value;
+    const probabilidad = document.getElementById('probabilidad').value;
+    const idActivo = document.getElementById('id_activo').value;
+    const display = document.getElementById('prioridad-calculada');
+
+    if (!impacto || !probabilidad || !idActivo) {
+        display.textContent = 'Esperando datos...';
+        display.style.color = '#94a3b8';
+        return;
     }
 
-    // --- Prioridades ---
-    const { data: prioridades } = await supabaseClient
-        .from('prioridad').select('*').order('id_prioridad');
-    
-    const selectPri = document.getElementById('id_prioridad');
-    const filtroPri = document.getElementById('filtro-prioridad');
-    if (prioridades) {
-        prioridades.forEach(p => {
-            selectPri.innerHTML += `<option value="${p.id_prioridad}">${p.nombre}</option>`;
-            filtroPri.innerHTML += `<option value="${p.id_prioridad}">${p.nombre}</option>`;
-        });
-    }
+    const activo = activosCache.find(a => a.id_activo == idActivo);
+    const criticidad = activo?.criticidad || 'Media';
 
-    // --- Estados ---
-    const { data: estados } = await supabaseClient
-        .from('estado').select('*').order('id_estado');
-    
-    const selectEst = document.getElementById('id_estado');
-    const filtroEst = document.getElementById('filtro-estado');
-    if (estados) {
-        estados.forEach(e => {
-            selectEst.innerHTML += `<option value="${e.id_estado}">${e.nombre}</option>`;
-            filtroEst.innerHTML += `<option value="${e.id_estado}">${e.nombre}</option>`;
-        });
-    }
+    const riesgo = calcularRiesgo(impacto, probabilidad, criticidad);
+    const prioridad = riesgoAPrioridad(riesgo);
 
-    // --- Activos ---
-    const { data: activos } = await supabaseClient
-        .from('activo').select('*').order('nombre');
-    
-    const selectAct = document.getElementById('id_activo');
-    if (activos) {
-        activos.forEach(a => {
-            selectAct.innerHTML += `<option value="${a.id_activo}">${a.nombre} (${a.tipo})</option>`;
-        });
-    }
+    const colores = {
+        'Baja': '#22c55e', 'Media': '#eab308', 'Alta': '#f97316', 'Critica': '#ef4444'
+    };
+    const iconos = { 'Baja': '🟢', 'Media': '🟡', 'Alta': '🟠', 'Critica': '🔴' };
+
+    display.textContent = `${iconos[prioridad]} ${prioridad}`;
+    display.style.color = colores[prioridad];
+    display.style.fontWeight = 'bold';
 }
 
 // ==========================================
-// 4. CARGAR INCIDENTES CON SUS RELACIONES
+// 3. CARGAR DROPDOWNS
+// ==========================================
+async function cargarDropdowns() {
+    // Categorías
+    const { data: categorias } = await supabaseClient.from('categoria').select('*').order('nombre');
+    categorias?.forEach(c => {
+        document.getElementById('id_categoria').innerHTML += `<option value="${c.id_categoria}">${c.nombre}</option>`;
+    });
+
+    // Prioridades (las guardamos en caché)
+    const { data: prioridades } = await supabaseClient.from('prioridad').select('*');
+    prioridadesCache = prioridades || [];
+    const filtroPri = document.getElementById('filtro-prioridad');
+    prioridades?.forEach(p => {
+        filtroPri.innerHTML += `<option value="${p.id_prioridad}">${p.nombre}</option>`;
+    });
+
+    // Estados
+    const { data: estados } = await supabaseClient.from('estado').select('*').order('id_estado');
+    estados?.forEach(e => {
+        document.getElementById('id_estado').innerHTML += `<option value="${e.id_estado}">${e.nombre}</option>`;
+        document.getElementById('filtro-estado').innerHTML += `<option value="${e.id_estado}">${e.nombre}</option>`;
+    });
+
+    // Activos (los guardamos en caché)
+    const { data: activos } = await supabaseClient.from('activo').select('*').order('nombre');
+    activosCache = activos || [];
+    activos?.forEach(a => {
+        document.getElementById('id_activo').innerHTML += `<option value="${a.id_activo}">${a.nombre} (${a.tipo})</option>`;
+    });
+}
+
+// Listener para recalcular prioridad en tiempo real
+document.getElementById('impacto').addEventListener('change', actualizarPrioridadCalculada);
+document.getElementById('probabilidad').addEventListener('change', actualizarPrioridadCalculada);
+document.getElementById('id_activo').addEventListener('change', actualizarPrioridadCalculada);
+
+// ==========================================
+// 4. CARGAR INCIDENTES
 // ==========================================
 async function cargarIncidentes(filtroPrioridad = '', filtroEstado = '') {
     const tbody = document.getElementById('tabla-incidentes');
@@ -108,8 +151,7 @@ async function cargarIncidentes(filtroPrioridad = '', filtroEstado = '') {
     const { data, error } = await query;
 
     if (error) {
-        console.error('Error:', error);
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#ef4444;">Error al cargar incidentes</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#ef4444;">Error al cargar</td></tr>`;
         return;
     }
 
@@ -120,26 +162,29 @@ async function cargarIncidentes(filtroPrioridad = '', filtroEstado = '') {
 
     tbody.innerHTML = data.map(inc => {
         const fecha = new Date(inc.fecha_reporte).toLocaleString('es-CO', {
-            day: '2-digit', month: '2-digit', year: 'numeric',
-            hour: '2-digit', minute: '2-digit'
+            day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
         });
-
         const nivelPrioridad = (inc.prioridad?.nivel || '').toLowerCase();
         const badgePrioridad = `<span class="badge badge-${nivelPrioridad}">${inc.prioridad?.nombre || '-'}</span>`;
+        
+        // Mostrar información del cálculo
+        const riesgoInfo = inc.nivel_riesgo 
+            ? `<small style="color:#94a3b8;">(Riesgo: ${inc.nivel_riesgo})</small>` 
+            : '';
 
         return `
         <tr>
             <td>#${inc.id_incidente}</td>
             <td>${inc.titulo}</td>
             <td>${inc.categoria?.nombre || '-'}</td>
-            <td>${badgePrioridad}</td>
+            <td>${badgePrioridad} ${riesgoInfo}</td>
             <td>${inc.estado?.nombre || '-'}</td>
             <td>${inc.activo?.nombre || '-'}</td>
             <td>${inc.usuario?.nombre || 'Sin asignar'}</td>
             <td>${fecha}</td>
             <td>
-                <button class="btn-action" onclick="cambiarEstado(${inc.id_incidente})" title="Cambiar estado">🔁</button>
-                <button class="btn-delete" onclick="eliminarIncidente(${inc.id_incidente})" title="Eliminar">🗑️</button>
+                <button class="btn-action" onclick="cambiarEstado(${inc.id_incidente})">🔁</button>
+                <button class="btn-delete" onclick="eliminarIncidente(${inc.id_incidente})">🗑️</button>
             </td>
         </tr>
         `;
@@ -147,112 +192,101 @@ async function cargarIncidentes(filtroPrioridad = '', filtroEstado = '') {
 }
 
 // ==========================================
-// 5. REGISTRAR NUEVO INCIDENTE
+// 5. REGISTRAR CON CÁLCULO AUTOMÁTICO
 // ==========================================
 document.getElementById('form-incidente').addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    const impacto = document.getElementById('impacto').value;
+    const probabilidad = document.getElementById('probabilidad').value;
+    const idActivo = parseInt(document.getElementById('id_activo').value);
+
+    // 🧠 El sistema calcula la prioridad automáticamente
+    const activo = activosCache.find(a => a.id_activo === idActivo);
+    const criticidad = activo?.criticidad || 'Media';
+    const nivelRiesgo = calcularRiesgo(impacto, probabilidad, criticidad);
+    const nombrePrioridad = riesgoAPrioridad(nivelRiesgo);
+    
+    // Buscar el id_prioridad que corresponde al nombre calculado
+    const prioridadEncontrada = prioridadesCache.find(p => 
+        p.nombre.toLowerCase().includes(nombrePrioridad.toLowerCase()) ||
+        p.nivel?.toLowerCase().includes(nombrePrioridad.toLowerCase())
+    );
 
     const nuevoIncidente = {
         titulo: document.getElementById('titulo').value.trim(),
         descripcion: document.getElementById('descripcion').value.trim(),
         id_categoria: parseInt(document.getElementById('id_categoria').value),
-        id_prioridad: parseInt(document.getElementById('id_prioridad').value),
         id_estado: parseInt(document.getElementById('id_estado').value),
-        id_activo: parseInt(document.getElementById('id_activo').value),
+        id_activo: idActivo,
         id_usuario: usuarioActual.id_usuario,
+        id_prioridad: prioridadEncontrada?.id_prioridad || 1, // Fallback
+        impacto: impacto,
+        probabilidad: probabilidad,
+        nivel_riesgo: nivelRiesgo,
         fecha_reporte: new Date().toISOString(),
         activo: true
     };
 
-    const { error } = await supabaseClient
-        .from('incidente')
-        .insert([nuevoIncidente]);
+    const { error } = await supabaseClient.from('incidente').insert([nuevoIncidente]);
 
     if (error) {
         alert('❌ Error al registrar: ' + error.message);
-        console.error(error);
     } else {
-        alert('✅ Incidente registrado exitosamente.');
+        alert(`✅ Incidente registrado.\n\n🧠 Motor inteligente:\nRiesgo calculado: ${nivelRiesgo}\nPrioridad asignada: ${nombrePrioridad}`);
         document.getElementById('form-incidente').reset();
+        document.getElementById('prioridad-calculada').textContent = 'Esperando datos...';
+        document.getElementById('prioridad-calculada').style.color = '#94a3b8';
         cargarIncidentes();
     }
 });
 
 // ==========================================
-// 6. CAMBIAR ESTADO DEL INCIDENTE
+// 6. CAMBIAR ESTADO
 // ==========================================
 async function cambiarEstado(id) {
-    const { data: estados } = await supabaseClient
-        .from('estado').select('*').order('id_estado');
-
+    const { data: estados } = await supabaseClient.from('estado').select('*').order('id_estado');
     let opciones = "Selecciona el nuevo estado:\n\n";
-    estados.forEach((e, i) => {
-        opciones += `${i + 1}. ${e.nombre}\n`;
-    });
-
+    estados.forEach((e, i) => opciones += `${i + 1}. ${e.nombre}\n`);
     const seleccion = prompt(opciones + "\nEscribe el número:");
-
     if (!seleccion) return;
-
     const indice = parseInt(seleccion) - 1;
     if (isNaN(indice) || indice < 0 || indice >= estados.length) {
-        alert('⚠️ Opción no válida.');
-        return;
+        alert('⚠️ Opción no válida.'); return;
     }
-
     const nuevoEstado = estados[indice];
-
-    const { error } = await supabaseClient
-        .from('incidente')
-        .update({ 
-            id_estado: nuevoEstado.id_estado,
-            fecha_ultima_actualizacion: new Date().toISOString()
-        })
+    const { error } = await supabaseClient.from('incidente')
+        .update({ id_estado: nuevoEstado.id_estado, fecha_ultima_actualizacion: new Date().toISOString() })
         .eq('id_incidente', id);
-
-    if (error) {
-        alert('❌ Error al actualizar: ' + error.message);
-    } else {
-        alert(`✅ Estado actualizado a: ${nuevoEstado.nombre}`);
-        cargarIncidentes();
-    }
+    if (error) alert('❌ Error: ' + error.message);
+    else { alert(`✅ Estado: ${nuevoEstado.nombre}`); cargarIncidentes(); }
 }
 
 // ==========================================
 // 7. ELIMINAR INCIDENTE
 // ==========================================
 async function eliminarIncidente(id) {
-    const confirmar = confirm('¿Estás segura de eliminar este incidente?');
-    if (!confirmar) return;
-
-    const { error } = await supabaseClient
-        .from('incidente')
-        .delete()
-        .eq('id_incidente', id);
-
-    if (error) {
-        alert('❌ Error al eliminar: ' + error.message);
-    } else {
-        alert('✅ Incidente eliminado.');
-        cargarIncidentes();
-    }
+    if (!confirm('¿Estás segura de eliminar este incidente?')) return;
+    const { error } = await supabaseClient.from('incidente').delete().eq('id_incidente', id);
+    if (error) alert('❌ Error: ' + error.message);
+    else { alert('✅ Eliminado.'); cargarIncidentes(); }
 }
 
 // ==========================================
 // 8. FILTROS
 // ==========================================
 document.getElementById('filtro-prioridad').addEventListener('change', () => {
-    const pri = document.getElementById('filtro-prioridad').value;
-    const est = document.getElementById('filtro-estado').value;
-    cargarIncidentes(pri, est);
+    cargarIncidentes(
+        document.getElementById('filtro-prioridad').value,
+        document.getElementById('filtro-estado').value
+    );
 });
-
 document.getElementById('filtro-estado').addEventListener('change', () => {
-    const pri = document.getElementById('filtro-prioridad').value;
-    const est = document.getElementById('filtro-estado').value;
-    cargarIncidentes(pri, est);
+    cargarIncidentes(
+        document.getElementById('filtro-prioridad').value,
+        document.getElementById('filtro-estado').value
+    );
 });
-
 function limpiarFiltros() {
     document.getElementById('filtro-prioridad').value = '';
     document.getElementById('filtro-estado').value = '';
@@ -260,11 +294,10 @@ function limpiarFiltros() {
 }
 
 // ==========================================
-// 9. EJECUTAR AL CARGAR
+// 9. INICIALIZAR
 // ==========================================
 async function init() {
     await cargarDropdowns();
     await cargarIncidentes();
 }
-
 init();
