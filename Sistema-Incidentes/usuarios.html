@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Usuarios - Sistema de Incidentes</title>
+    <title>Incidentes - Sistema de Incidentes</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -16,12 +16,12 @@
         </div>
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
-            <a href="incidentes.html" class="nav-item">🚨 Incidentes</a>
+            <a href="incidentes.html" class="nav-item active">🚨 Incidentes</a>
             <a href="categorias.html" class="nav-item">📁 Categorías</a>
             <a href="prioridades.html" class="nav-item">⚡ Prioridades</a>
             <a href="estados.html" class="nav-item">🔖 Estados</a>
             <a href="activos.html" class="nav-item">💻 Activos</a>
-            <a href="usuarios.html" class="nav-item active">👥 Usuarios</a>
+            <a href="usuarios.html" class="nav-item">👥 Usuarios</a>
         </nav>
         <button onclick="cerrarSesion()" class="sidebar-logout">🚪 Cerrar Sesión</button>
     </aside>
@@ -29,18 +29,101 @@
     <!-- ===== CONTENIDO PRINCIPAL ===== -->
     <main class="main-content">
         <header class="top-header">
-            <h1>👥 Gestión de Usuarios</h1>
+            <h1>🚨 Gestión de Incidentes</h1>
             <div class="user-info">
                 <span id="nombre-usuario">Cargando...</span>
                 <div class="user-avatar" id="user-avatar">?</div>
             </div>
         </header>
 
+<!-- Formulario para registrar incidente -->
+<section class="form-section">
+    <h2>Reportar Nuevo Incidente</h2>
+    <form id="form-incidente">
+        <div class="form-row">
+            <div class="input-group">
+                <label for="titulo">Título del incidente:</label>
+                <input type="text" id="titulo" placeholder="Ej: Correo sospechoso de banco" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="input-group" style="flex: 1 1 100%;">
+                <label for="descripcion">Descripción detallada:</label>
+                <textarea id="descripcion" rows="3" placeholder="Describe qué sucedió..." required></textarea>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="input-group">
+                <label for="id_categoria">Categoría:</label>
+                <select id="id_categoria" required>
+                    <option value="">Seleccione...</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="id_estado">Estado inicial:</label>
+                <select id="id_estado" required>
+                    <option value="">Seleccione...</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="id_activo">Activo afectado:</label>
+                <select id="id_activo" required>
+                    <option value="">Seleccione...</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 🔥 NUEVA SECCIÓN: EVALUACIÓN DE RIESGO -->
+        <div class="form-row" style="border-top: 1px solid #334155; padding-top: 20px; margin-top: 10px;">
+            <div class="input-group" style="flex: 1 1 100%;">
+                <h3 style="color: #38bdf8; font-size: 1rem; margin-bottom: 10px;">Motor Inteligente</h3>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="input-group">
+                <label for="impacto">Impacto:</label>
+                <select id="impacto" required>
+                    <option value="">Seleccione...</option>
+                    <option value="Bajo">Bajo</option>
+                    <option value="Medio">Medio</option>
+                    <option value="Alto">Alto</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="probabilidad">Probabilidad de ocurrencia:</label>
+                <select id="probabilidad" required>
+                    <option value="">Seleccione...</option>
+                    <option value="Baja">Baja</option>
+                    <option value="Media">Media</option>
+                    <option value="Alta">Alta</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Prioridad calculada automáticamente:</label>
+                <div id="prioridad-calculada" style="padding: 12px; background: #0f172a; border-radius: 6px; border: 1px solid #475569; color: #94a3b8; text-align: center;">
+                    Esperando datos...
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">💾 Registrar</button>
+        </div>
+    </form>
+</section>
+
+        <!-- Filtros y Tabla -->
         <section class="table-section">
             <div class="table-header">
-                <h2>Listado de Usuarios</h2>
+                <h2>Listado de Incidentes</h2>
                 <div class="filters">
-                    <button type="button" class="btn-primary">➕ Nuevo Usuario</button>
+                    <select id="filtro-prioridad">
+                        <option value="">Todas las prioridades</option>
+                    </select>
+                    <select id="filtro-estado">
+                        <option value="">Todos los estados</option>
+                    </select>
+                    <button type="button" class="btn-secondary" onclick="limpiarFiltros()">🔄 Limpiar</button>
                 </div>
             </div>
 
@@ -48,14 +131,18 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Rol</th>
+                        <th>Título</th>
+                        <th>Categoría</th>
+                        <th>Prioridad</th>
+                        <th>Estado</th>
+                        <th>Activo</th>
+                        <th>Reportado por</th>
+                        <th>Fecha</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody id="tabla-usuarios">
-                    <tr><td colspan="5" style="text-align:center;">Cargando...</td></tr>
+                <tbody id="tabla-incidentes">
+                    <tr><td colspan="9" style="text-align:center;">Cargando...</td></tr>
                 </tbody>
             </table>
         </section>
@@ -64,8 +151,7 @@
     <!-- Contenedor oculto requerido por Google Translate -->
     <div id="google_translate_element" style="display:none;"></div>
 
-    <!-- Tu script de usuarios (si lo tienes, ponlo aquí) -->
-    <script src="usuarios.js"></script>
+    <script src="incidentes.js"></script>
 
     <!-- ===== SCRIPT DE TRADUCCIÓN AUTOMÁTICA ===== -->
     <script type="text/javascript">
@@ -74,16 +160,19 @@
             new google.translate.TranslateElement({
                 pageLanguage: 'es',
                 includedLanguages: 'en',
-                autoDisplay: false 
+                autoDisplay: false // Evita que salga el cartel blanco feo de Google
             }, 'google_translate_element');
         }
 
-        // 2. Función para forzar la traducción
+        // 2. Función para forzar la traducción de forma automática
         function forzarTraduccion() {
             var cookieActual = document.cookie;
+            // Si la página no está traducida al inglés aún...
             if (cookieActual.indexOf('googtrans=/es/en') === -1) {
+                // Creamos la cookie mágica que le dice a Google que traduzca
                 document.cookie = "googtrans=/es/en; path=/";
                 document.cookie = "googtrans=/es/en; path=/; domain=" + window.location.hostname;
+                // Recargamos la página 1 sola vez para que aplique la traducción
                 window.location.reload();
             }
         }
