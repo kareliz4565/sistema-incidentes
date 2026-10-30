@@ -148,23 +148,41 @@
         </section>
     </main>
 
-    <script src="incidentes.js"></script>
-        <script src="incidentes.js"></script>
+    <!-- Contenedor oculto requerido por Google Translate -->
+    <div id="google_translate_element" style="display:none;"></div>
 
-    <!-- 👇 AGREGAR ESTO AQUÍ 👇 -->
+    <script src="incidentes.js"></script>
+
+    <!-- ===== SCRIPT DE TRADUCCIÓN AUTOMÁTICA ===== -->
     <script type="text/javascript">
+        // 1. Inicializamos el traductor de Google
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({
-                pageLanguage: 'es', // Tu idioma original
-                includedLanguages: 'en', // Solo mostrará la opción de Inglés
-                layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+                pageLanguage: 'es',
+                includedLanguages: 'en',
+                autoDisplay: false // Evita que salga el cartel blanco feo de Google
             }, 'google_translate_element');
         }
+
+        // 2. Función para forzar la traducción de forma automática
+        function forzarTraduccion() {
+            var cookieActual = document.cookie;
+            // Si la página no está traducida al inglés aún...
+            if (cookieActual.indexOf('googtrans=/es/en') === -1) {
+                // Creamos la cookie mágica que le dice a Google que traduzca
+                document.cookie = "googtrans=/es/en; path=/";
+                document.cookie = "googtrans=/es/en; path=/; domain=" + window.location.hostname;
+                // Recargamos la página 1 sola vez para que aplique la traducción
+                window.location.reload();
+            }
+        }
+
+        // 3. Ejecutamos la función apenas cargue la página
+        window.onload = function() {
+            forzarTraduccion();
+        };
     </script>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    <!-- 👆 FIN DEL AGREGADO 👆 -->
 
-</body>
-</html>
 </body>
 </html>
