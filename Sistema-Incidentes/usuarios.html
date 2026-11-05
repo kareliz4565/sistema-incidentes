@@ -29,7 +29,7 @@
     <!-- ===== CONTENIDO PRINCIPAL ===== -->
     <main class="main-content">
         <header class="top-header">
-            <h1>👥 Gestión de Usuarios y Asignaciones</h1>
+            <h1>👥 Gestión de Asignaciones</h1>
             <div class="user-info">
                 <span id="nombre-usuario">Cargando...</span>
                 <div class="user-avatar" id="user-avatar">?</div>
@@ -38,7 +38,7 @@
 
         <!-- RESUMEN DE CARGA POR USUARIO -->
         <section class="form-section">
-            <h2>📊 Resumen de Incidentes Asignados</h2>
+            <h2>📊 Resumen de Incidentes</h2>
             <div class="users-summary" id="resumen-usuarios">
                 <p style="color:#94a3b8;">Cargando resumen...</p>
             </div>
@@ -66,23 +66,22 @@
             </form>
         </section>
 
-        <!-- TABLA DE USUARIOS CON CONTEO -->
+        <!-- TABLA DE INCIDENTES ASIGNADOS Y RECOMENDACIONES -->
         <section class="table-section">
-            <h2>👤 Usuarios y su Carga de Trabajo</h2>
+            <h2>📋 Incidentes Asignados y Guía de Resolución</h2>
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Rol</th>
+                        <th>Título del Incidente</th>
+                        <th>Categoría</th>
+                        <th>Prioridad</th>
+                        <th>Asignado a</th>
                         <th>Estado</th>
-                        <th>📥 Incidentes Asignados</th>
-                        <th>🧠 Recomendación</th> <!-- Cambiado de "Acciones" a "Recomendación" -->
+                        <th>🧠 Recomendación / Cómo proceder</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-usuarios">
-                    <!-- El colspan ahora es 7 para abarcar todas las columnas -->
                     <tr><td colspan="7" style="text-align:center;">Cargando...</td></tr>
                 </tbody>
             </table>
