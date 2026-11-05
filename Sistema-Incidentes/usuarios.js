@@ -206,7 +206,71 @@ document.getElementById('form-asignar').addEventListener('submit', async (e) => 
         await cargarUsuarios(); // Recargar la tabla
     }
 });
+// ==========================================
+// 6.5 MOTOR DE AUTO-ASIGNACIÓN
+// ==========================================
+async function autoAsignarIncidentes() {
+    // 1. Filtrar solo Analistas (o Administradores) que estén activos
+    const analistas = todosUsuarios.filter(u => 
+        (u.rol === 'Analista de Ciberseguridad' || u.rol === 'Administrador') && u.activo === true
+    );
 
+    if (analistas.length === 0) {
+        alert('⚠️ No hay analistas o administradores activos para asignar.');
+        return;
+    }
+
+    // 2. Filtrar los incidentes que no tienen asignado y no están cerrados
+    const pendientes = todosIncidentes.filter(inc => 
+        !inc.id_asignado && (inc.estado?.nombre || '').toLowerCase() !== 'cerrado'
+    );
+
+    if (pendientes.length === 0) {
+        alert('✅ No hay incidentes pendientes por asignar.');
+        return;
+    }
+
+    const confirmar = confirm(`Se van a asignar ${pendientes.length} incidentes automáticamente a los analistas disponibles. ¿Deseas continuar?`);
+    if (!confirmar) return;
+
+    // 3. Contar cuántos incidentes tiene actualmente cada analista
+    const cargaAnalistas = analistas.map(a => {
+        const asignados = todosIncidentes.filter(inc => 
+            inc.id_asignado === a.id_usuario && 
+            (inc.estado?.nombre || '').toLowerCase() !== 'cerrado'
+        ).length;
+        return { ...a, cargaActual: asignados };
+    });
+
+    let asignacionesExitosas = 0;
+
+    // 4. Asignar uno por uno al que tenga menos carga (Balanceo de carga)
+    for (const incidente of pendientes) {
+        // Ordenar analistas por carga (menor primero)
+        cargaAnalistas.sort((a, b) => a.cargaActual - b.cargaActual);
+        
+        // Elegir al analista con menos carga
+        const elegido = cargaAnalistas[0];
+
+        // Actualizar en Supabase
+        const { error } = await supabaseClient
+            .from('incidente')
+            .update({ id_asignado: elegido.id_usuario })
+            .eq('id_incidente', incidente.id_incidente);
+
+        if (!error) {
+            // Actualizar los datos locales para el siguiente ciclo
+            incidente.id_asignado = elegido.id_usuario;
+            elegido.cargaActual++;
+            asignacionesExitosas++;
+        }
+    }
+
+    alert(`🪄 ¡Asignación automática completada!\n\nSe asignaron ${asignacionesExitosas} incidentes balanceando la carga entre ${analistas.length} analistas.`);
+    
+    // Recargar la página para ver los cambios
+    await cargarUsuarios();
+}
 // ==========================================
 // 7. INICIALIZAR
 // ==========================================
