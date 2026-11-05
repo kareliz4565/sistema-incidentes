@@ -39,6 +39,18 @@
         <!-- RESUMEN DE CARGA POR USUARIO -->
         <section class="form-section">
             <h2>📊 Resumen de Incidentes</h2>
+        <section class="form-section">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <h2>📊 Resumen de Incidentes</h2>
+        <!-- BOTÓN DE AUTO-ASIGNACIÓN -->
+        <button class="btn-primary" onclick="autoAsignarIncidentes()" style="background-color: #8b5cf6; height: auto; padding: 10px 20px;">
+            🪄 Auto-asignar incidentes pendientes
+        </button>
+    </div>
+    <div class="users-summary" id="resumen-usuarios" style="margin-top: 20px;">
+        <p style="color:#94a3b8;">Cargando resumen...</p>
+    </div>
+</section>
             <div class="users-summary" id="resumen-usuarios">
                 <p style="color:#94a3b8;">Cargando resumen...</p>
             </div>
