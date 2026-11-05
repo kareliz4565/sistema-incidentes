@@ -31,7 +31,7 @@ function cerrarSesion() {
 // ==========================================
 async function cargarUsuarios() {
     const tbody = document.getElementById('tabla-usuarios');
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Cargando...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Cargando...</td></tr>`;
 
     // Traer usuarios
     const { data: usuarios, error: errU } = await supabaseClient
@@ -42,7 +42,7 @@ async function cargarUsuarios() {
         .from('incidente').select('id_incidente, titulo, id_asignado, estado:id_estado(nombre)');
 
     if (errU || errI) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444;">Error al cargar</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#ef4444;">Error al cargar</td></tr>`;
         return;
     }
 
@@ -62,22 +62,30 @@ async function cargarUsuarios() {
     // Renderizar tabla
     tbody.innerHTML = todosUsuarios.map(u => {
         const asignados = conteo[u.id_usuario] || 0;
-        const colorCarga = asignados >= 5 ? '#ef4444' : asignados >= 3 ? '#eab308' : '#22c55e';
         
+        // Lógica de la Recomendación Automática (Inteligencia del sistema)
+        let recomendacionHTML = '';
+        if (asignados === 0) {
+            recomendacionHTML = '<span style="color:#22c55e; font-weight:bold; font-size:0.85rem;">🟢 Disponible</span>';
+        } else if (asignados <= 2) {
+            recomendacionHTML = '<span style="color:#eab308; font-weight:bold; font-size:0.85rem;">🟡 Carga moderada</span>';
+        } else {
+            recomendacionHTML = '<span style="color:#ef4444; font-weight:bold; font-size:0.85rem;">🔴 Sobrecargado</span>';
+        }
+
         return `
         <tr>
             <td>${u.id_usuario}</td>
             <td>${u.nombre}</td>
             <td>${u.correo}</td>
+            <td>${u.rol || 'Empleado'}</td>
             <td><span class="badge ${u.activo ? 'badge-baja' : 'badge-critica'}">${u.activo ? 'Activo' : 'Inactivo'}</span></td>
             <td>
-                <span style="background:${colorCarga}; color:white; padding:4px 12px; border-radius:20px; font-weight:bold; font-size:0.8rem;">
+                <span style="background:#1e293b; padding:4px 12px; border-radius:20px; font-weight:bold; font-size:0.8rem; border: 1px solid #475569;">
                     ${asignados} incidente(s)
                 </span>
             </td>
-            <td>
-                <button class="btn-action" onclick="verIncidentesDe(${u.id_usuario})">👁️ Ver</button>
-            </td>
+            <td>${recomendacionHTML}</td>
         </tr>
         `;
     }).join('');
@@ -136,7 +144,7 @@ function llenarDropdownUsuarios() {
     const select = document.getElementById('select-usuario');
     select.innerHTML = '<option value="">Seleccione un usuario...</option>';
     todosUsuarios.forEach(u => {
-        select.innerHTML += `<option value="${u.id_usuario}">${u.nombre} (${u.correo})</option>`;
+        select.innerHTML += `<option value="${u.id_usuario}">${u.nombre} (${u.rol || 'Empleado'})</option>`;
     });
 }
 
@@ -180,28 +188,7 @@ document.getElementById('form-asignar').addEventListener('submit', async (e) => 
 });
 
 // ==========================================
-// 6. VER INCIDENTES DE UN USUARIO
-// ==========================================
-function verIncidentesDe(idUsuario) {
-    const usuario = todosUsuarios.find(u => u.id_usuario === idUsuario);
-    const incidentes = todosIncidentes.filter(i => i.id_asignado === idUsuario);
-
-    if (incidentes.length === 0) {
-        alert(`📋 ${usuario.nombre} no tiene incidentes asignados.`);
-        return;
-    }
-
-    let mensaje = `📋 Incidentes asignados a ${usuario.nombre}:\n\n`;
-    incidentes.forEach(i => {
-        const estado = i.estado?.nombre || 'Sin estado';
-        mensaje += `• #${i.id_incidente} - ${i.titulo}\n  Estado: ${estado}\n\n`;
-    });
-
-    alert(mensaje);
-}
-
-// ==========================================
-// 7. INICIALIZAR
+// 6. INICIALIZAR
 // ==========================================
 window.scrollTo(0, 0);
 cargarUsuarios();
