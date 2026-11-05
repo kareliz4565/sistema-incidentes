@@ -27,7 +27,34 @@ function cerrarSesion() {
 }
 
 // ==========================================
-// 2. CARGAR USUARIOS CON CONTEO DE INCIDENTES
+// 2. MOTOR DE RECOMENDACIONES (Guía de resolución)
+// ==========================================
+function obtenerRecomendacion(categoriaNombre, prioridadNivel) {
+    const cat = (categoriaNombre || '').toLowerCase();
+    
+    // Guía según la categoría
+    if (cat.includes('phishing')) {
+        return "1. Aislar el correo. 2. No abrir enlaces. 3. Cambiar contraseñas. 4. Reportar al remitente.";
+    } 
+    if (cat.includes('malware') || cat.includes('ransomware')) {
+        return "1. Desconectar el equipo de la red. 2. Escanear con antivirus. 3. Restaurar desde copia de seguridad si es necesario.";
+    }
+    if (cat.includes('acceso') || cat.includes('intrusión')) {
+        return "1. Bloquear la cuenta comprometida. 2. Revisar logs de acceso. 3. Forzar cambio de contraseña y aplicar doble factor.";
+    }
+    if (cat.includes('ddos')) {
+        return "1. Activar mitigación en el firewall. 2. Contactar al proveedor de internet. 3. Monitorear el tráfico.";
+    }
+
+    // Si no coincide con ninguna, se usa la prioridad
+    if (prioridadNivel === 'Critica' || prioridadNivel === 'Alta') {
+        return "🔴 Aislar el activo afectado y escalar inmediatamente al equipo de seguridad.";
+    }
+    return "🟡 Documentar el incidente, investigar la causa raíz y aplicar parches de seguridad.";
+}
+
+// ==========================================
+// 3. CARGAR Y MOSTRAR INCIDENTES ASIGNADOS
 // ==========================================
 async function cargarUsuarios() {
     const tbody = document.getElementById('tabla-usuarios');
@@ -35,76 +62,69 @@ async function cargarUsuarios() {
 
     // Traer usuarios
     const { data: usuarios, error: errU } = await supabaseClient
-        .from('usuario').select('*').order('id_usuario');
+        .from('usuario').select('*');
 
-    // Traer incidentes con asignación
+    // Traer incidentes con todas sus relaciones (incluyendo al asignado)
     const { data: incidentes, error: errI } = await supabaseClient
-        .from('incidente').select('id_incidente, titulo, id_asignado, estado:id_estado(nombre)');
+        .from('incidente')
+        .select(`
+            id_incidente, 
+            titulo, 
+            id_asignado, 
+            estado:id_estado(nombre),
+            categoria:id_categoria(nombre),
+            prioridad:id_prioridad(nombre, nivel),
+            asignado:id_asignado(nombre)
+        `)
+        .order('id_incidente', { ascending: false });
 
     if (errU || errI) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#ef4444;">Error al cargar</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#ef4444;">Error al cargar datos</td></tr>`;
         return;
     }
 
     todosUsuarios = usuarios || [];
     todosIncidentes = incidentes || [];
 
-    // Contar incidentes por usuario asignado (solo abiertos/proceso)
-    const conteo = {};
-    todosIncidentes.forEach(inc => {
-        const estado = (inc.estado?.nombre || '').toLowerCase();
-        if (estado === 'cerrado') return; // No contar cerrados
-        if (inc.id_asignado) {
-            conteo[inc.id_asignado] = (conteo[inc.id_asignado] || 0) + 1;
-        }
-    });
+    // Renderizar la tabla de incidentes
+    if (todosIncidentes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No hay incidentes registrados.</td></tr>`;
+        return;
+    }
 
-    // Renderizar tabla
-    tbody.innerHTML = todosUsuarios.map(u => {
-        const asignados = conteo[u.id_usuario] || 0;
+    tbody.innerHTML = todosIncidentes.map(inc => {
+        const nivelPrio = (inc.prioridad?.nivel || 'baja').toLowerCase();
+        const badgePrio = `<span class="badge badge-${nivelPrio}">${inc.prioridad?.nombre || '-'}</span>`;
         
-        // Lógica de la Recomendación Automática (Inteligencia del sistema)
-        let recomendacionHTML = '';
-        if (asignados === 0) {
-            recomendacionHTML = '<span style="color:#22c55e; font-weight:bold; font-size:0.85rem;">🟢 Disponible</span>';
-        } else if (asignados <= 2) {
-            recomendacionHTML = '<span style="color:#eab308; font-weight:bold; font-size:0.85rem;">🟡 Carga moderada</span>';
-        } else {
-            recomendacionHTML = '<span style="color:#ef4444; font-weight:bold; font-size:0.85rem;">🔴 Sobrecargado</span>';
-        }
+        // Obtener la recomendación inteligente
+        const recomendacion = obtenerRecomendacion(inc.categoria?.nombre, inc.prioridad?.nivel);
 
         return `
         <tr>
-            <td>${u.id_usuario}</td>
-            <td>${u.nombre}</td>
-            <td>${u.correo}</td>
-            <td>${u.rol || 'Empleado'}</td>
-            <td><span class="badge ${u.activo ? 'badge-baja' : 'badge-critica'}">${u.activo ? 'Activo' : 'Inactivo'}</span></td>
-            <td>
-                <span style="background:#1e293b; padding:4px 12px; border-radius:20px; font-weight:bold; font-size:0.8rem; border: 1px solid #475569;">
-                    ${asignados} incidente(s)
-                </span>
-            </td>
-            <td>${recomendacionHTML}</td>
+            <td>#${inc.id_incidente}</td>
+            <td>${inc.titulo}</td>
+            <td>${inc.categoria?.nombre || '-'}</td>
+            <td>${badgePrio}</td>
+            <td>${inc.asignado?.nombre || '<em style="color:#94a3b8;">Sin asignar</em>'}</td>
+            <td>${inc.estado?.nombre || '-'}</td>
+            <td><small style="color:#cbd5e1; line-height: 1.4; display:block; max-width: 300px;">${recomendacion}</small></td>
         </tr>
         `;
     }).join('');
 
-    // Actualizar resumen de tarjetas
-    renderizarResumen(conteo);
-    // Llenar dropdown de usuarios
+    // Actualizar resumen de tarjetas y dropdowns
+    renderizarResumen();
     llenarDropdownUsuarios();
-    // Llenar dropdown de incidentes sin asignar
     llenarDropdownIncidentes();
 }
 
 // ==========================================
-// 3. RESUMEN TIPO TARJETAS
+// 4. RESUMEN TIPO TARJETAS
 // ==========================================
-function renderizarResumen(conteo) {
+function renderizarResumen() {
     const contenedor = document.getElementById('resumen-usuarios');
     
-    const totalAsignados = Object.values(conteo).reduce((a, b) => a + b, 0);
+    const totalAsignados = todosIncidentes.filter(i => i.id_asignado).length;
     const totalSinAsignar = todosIncidentes.filter(i => !i.id_asignado && (i.estado?.nombre || '').toLowerCase() !== 'cerrado').length;
 
     contenedor.innerHTML = `
@@ -138,7 +158,7 @@ function renderizarResumen(conteo) {
 }
 
 // ==========================================
-// 4. LLENAR DROPDOWNS
+// 5. LLENAR DROPDOWNS
 // ==========================================
 function llenarDropdownUsuarios() {
     const select = document.getElementById('select-usuario');
@@ -164,7 +184,7 @@ function llenarDropdownIncidentes() {
 }
 
 // ==========================================
-// 5. ASIGNAR INCIDENTE
+// 6. ASIGNAR INCIDENTE
 // ==========================================
 document.getElementById('form-asignar').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -183,12 +203,12 @@ document.getElementById('form-asignar').addEventListener('submit', async (e) => 
         const usuario = todosUsuarios.find(u => u.id_usuario === idUsuario);
         alert(`✅ Incidente #${idIncidente} asignado a: ${usuario.nombre}`);
         document.getElementById('form-asignar').reset();
-        await cargarUsuarios();
+        await cargarUsuarios(); // Recargar la tabla
     }
 });
 
 // ==========================================
-// 6. INICIALIZAR
+// 7. INICIALIZAR
 // ==========================================
 window.scrollTo(0, 0);
 cargarUsuarios();
