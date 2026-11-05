@@ -111,6 +111,7 @@ function renderizarTabla(incidentes) {
             <td>${fecha}</td>
             <td>
                 <button class="btn-action" onclick="cambiarEstado(${inc.id_incidente})" title="Cambiar estado">🔁</button>
+                <button class="btn-action" style="background-color: #eab308; color: #0f172a;" onclick="verBitacora(${inc.id_incidente})" title="Ver Bitácora">👁️</button>
             </td>
         </tr>
         `;
@@ -118,7 +119,7 @@ function renderizarTabla(incidentes) {
 }
 
 // ==========================================
-// 5. CAMBIAR ESTADO
+// 5. CAMBIAR ESTADO CON BITÁCORA
 // ==========================================
 async function cambiarEstado(id) {
     const { data: estados } = await supabaseClient
@@ -127,7 +128,7 @@ async function cambiarEstado(id) {
     let opciones = "Selecciona el nuevo estado:\n\n";
     estados.forEach((e, i) => opciones += `${i + 1}. ${e.nombre}\n`);
     
-    const seleccion = prompt(opciones + "\nEscribe el número:");
+    const seleccion = prompt(opciones + "\nEscribe el número del nuevo estado:");
     if (!seleccion) return;
 
     const indice = parseInt(seleccion) - 1;
@@ -138,24 +139,56 @@ async function cambiarEstado(id) {
 
     const nuevoEstado = estados[indice];
 
+    // PEDIR LA NOTA DE BITÁCORA (Obligatoria)
+    const notaBitacora = prompt(`Has seleccionado cambiar a: ${nuevoEstado.nombre}\n\n📝 Por favor, escribe la observación o acción realizada (Bitácora):\n(Ej: "Se aisló el equipo", "Se cambió la contraseña", etc.)`);
+    
+    if (notaBitacora === null) return; // Si cancela, no hacemos nada
+    if (notaBitacora.trim() === "") {
+        alert("⚠️ Es obligatorio escribir una nota en la bitácora para cambiar el estado.");
+        return;
+    }
+
+    const fechaActual = new Date().toLocaleString('es-CO');
+    
+    // Obtener la descripción actual para no borrarla
+    const { data: incidenteActual } = await supabaseClient
+        .from('incidente')
+        .select('descripcion')
+        .eq('id_incidente', id)
+        .single();
+
+    const nuevaDescripcion = `${incidenteActual.descripcion || ''}\n\n--- BITÁCORA (${fechaActual}) ---\nAcción: Cambio a [${nuevoEstado.nombre}]\nNota: ${notaBitacora}`;
+
     const { error } = await supabaseClient
         .from('incidente')
         .update({ 
             id_estado: nuevoEstado.id_estado,
-            fecha_ultima_actualizacion: new Date().toISOString()
+            fecha_ultima_actualizacion: new Date().toISOString(),
+            descripcion: nuevaDescripcion // Guardamos la bitácora aquí
         })
         .eq('id_incidente', id);
 
     if (error) {
         alert('❌ Error: ' + error.message);
     } else {
-        alert(`✅ Estado actualizado a: ${nuevoEstado.nombre}`);
+        alert(`✅ Estado actualizado a: ${nuevoEstado.nombre}\n📝 Bitácora guardada exitosamente.`);
         cargarIncidentes();
     }
 }
 
 // ==========================================
-// 6. FILTROS
+// 6. VER BITÁCORA DEL INCIDENTE
+// ==========================================
+function verBitacora(id) {
+    const incidente = todosIncidentes.find(i => i.id_incidente === id);
+    
+    if (!incidente) return;
+
+    alert(`📋 BITÁCORA DEL INCIDENTE #${id}\nTítulo: ${incidente.titulo}\n\nHistorial de acciones:\n${incidente.descripcion}`);
+}
+
+// ==========================================
+// 7. FILTROS
 // ==========================================
 function filtrarPorEstado(estado) {
     document.getElementById('filtro-estado-incidente').value = estado;
@@ -180,7 +213,7 @@ function limpiarFiltro() {
 document.getElementById('filtro-estado-incidente').addEventListener('change', aplicarFiltro);
 
 // ==========================================
-// 7. INICIALIZAR
+// 8. INICIALIZAR
 // ==========================================
 window.scrollTo(0, 0);
 cargarIncidentes();
