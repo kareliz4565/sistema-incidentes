@@ -266,11 +266,7 @@ async function autoAsignarIncidentes() {
         }
     }
 
-    alert(`🪄 ¡Asignación automática completada!\n\nSe asignaron ${asignacionesExitosas} incidentes balanceando la carga entre ${analistas.length} analistas.`);
-    
-    // Recargar la página para ver los cambios
-    await cargarUsuarios();
-}
+   
 // ==========================================
 // 7. INICIALIZAR
 // ==========================================
