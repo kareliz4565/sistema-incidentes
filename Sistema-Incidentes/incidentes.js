@@ -158,7 +158,6 @@ async function cargarIncidentes(filtroPrioridad = '', filtroEstado = '') {
     const tbody = document.getElementById('tabla-incidentes');
     tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Cargando...</td></tr>`;
 
-    // Agregamos la relación con el asignado
     let query = supabaseClient
         .from('incidente')
         .select(`
@@ -201,7 +200,6 @@ async function cargarIncidentes(filtroPrioridad = '', filtroEstado = '') {
             ? `<br><small style="color:#94a3b8; font-size:0.75rem;">Riesgo: ${inc.nivel_riesgo}</small>` 
             : '';
 
-        // Mostramos quién lo reportó y a quién se le asignó automáticamente
         const reportadoPor = inc.usuario?.nombre || 'Desconocido';
         const asignadoA = inc.asignado?.nombre ? `<br><small style="color:#38bdf8;">👤 ${inc.asignado.nombre}</small>` : '<br><small style="color:#94a3b8;">Sin asignar</small>';
 
@@ -271,7 +269,7 @@ document.getElementById('form-incidente').addEventListener('submit', async (e) =
         idAsignadoAuto = conteoAnalistas[0].id_usuario;
     }
 
-    // 3. Guardamos el incidente
+    // 3. Guardamos el incidente CON el id_asignado
     const nuevoIncidente = {
         titulo: document.getElementById('titulo').value.trim(),
         descripcion: document.getElementById('descripcion').value.trim(),
@@ -279,7 +277,7 @@ document.getElementById('form-incidente').addEventListener('submit', async (e) =
         id_estado: parseInt(document.getElementById('id_estado').value),
         id_activo: idActivo,
         id_usuario: usuarioActual.id_usuario, 
-        id_asignado: idAsignadoAuto, // Asignación automática
+        id_asignado: idAsignadoAuto, // ¡Aquí se guarda la asignación!
         id_prioridad: prioridadEncontrada?.id_prioridad || 1,
         impacto: impacto,
         probabilidad: probabilidad,
