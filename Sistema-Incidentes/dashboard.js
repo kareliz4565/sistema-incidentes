@@ -6,7 +6,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==========================================
-// 1. VERIFICAR SESIÓN Y MOSTRAR DATOS DEL USUARIO
+// 1. VERIFICAR SESIÓN
 // ==========================================
 const usuarioGuardado = localStorage.getItem('usuarioLogueado');
 
@@ -18,13 +18,12 @@ if (!usuarioGuardado) {
     document.getElementById('nombre-usuario').textContent = usuario.nombre;
     document.getElementById('rol-usuario').textContent = usuario.rol || 'Empleado';
     
-    // Mostrar la inicial del nombre en el avatar
     const inicial = usuario.nombre.charAt(0).toUpperCase();
     document.getElementById('user-avatar').textContent = inicial;
 }
 
 // ==========================================
-// 2. FUNCIÓN PARA CERRAR SESIÓN
+// 2. CERRAR SESIÓN
 // ==========================================
 function cerrarSesion() {
     localStorage.removeItem('usuarioLogueado');
@@ -33,23 +32,77 @@ function cerrarSesion() {
 }
 
 // ==========================================
-// 3. CARGAR INDICADORES (Se conectará a Supabase)
+// 3. CARGAR INDICADORES Y TABLA
 // ==========================================
-// Esta función se activará cuando creemos la tabla incidente
-// Por ahora mostrará 0 porque aún no hay datos
-async function cargarIndicadores() {
-    try {
-        // Total de incidentes
-        const { count: total } = await supabaseClient
-            .from('incidente')
-            .select('*', { count: 'exact', head: true });
-        
-        document.getElementById('total-incidentes').textContent = total || 0;
+async function cargarDashboard() {
+    // Traemos todos los incidentes con sus relaciones
+    const { data: incidentes, error } = await supabaseClient
+        .from('incidente')
+        .select(`
+            id_incidente, 
+            titulo, 
+            fecha_reporte,
+            categoria:id_categoria (nombre),
+            prioridad:id_prioridad (nombre, nivel),
+            estado:id_estado (nombre),
+            usuario:id_usuario (nombre)
+        `)
+        .order('id_incidente', { ascending: false });
 
-    } catch (error) {
-        console.log('Los indicadores se activarán cuando registres incidentes.');
+    if (error) {
+        console.error('Error al cargar:', error);
+        return;
     }
+
+    // 1. CALCULAR INDICADORES
+    const total = incidentes.length;
+    let criticos = 0;
+    let abiertos = 0;
+    let cerrados = 0;
+
+    incidentes.forEach(inc => {
+        const nivelPrio = inc.prioridad?.nivel || '';
+        const nombreEstado = inc.estado?.nombre || '';
+
+        if (nivelPrio === 'Critica' || nivelPrio === 'Critico') criticos++;
+        if (nombreEstado === 'Abierto') abiertos++;
+        if (nombreEstado === 'Cerrado') cerrados++;
+    });
+
+    // Actualizar las tarjetas de arriba
+    document.getElementById('total-incidentes').textContent = total;
+    document.getElementById('incidentes-criticos').textContent = criticos;
+    document.getElementById('incidentes-abiertos').textContent = abiertos;
+    document.getElementById('incidentes-cerrados').textContent = cerrados;
+
+    // 2. RENDERIZAR TABLA DE ÚLTIMOS 5 INCIDENTES
+    const tbody = document.getElementById('tabla-ultimos-incidentes');
+    const ultimos = incidentes.slice(0, 5); // Solo mostramos los 5 más recientes
+
+    if (ultimos.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No hay incidentes registrados.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = ultimos.map(inc => {
+        const nivelPrio = (inc.prioridad?.nivel || 'baja').toLowerCase();
+        const badgePrio = `<span class="badge badge-${nivelPrio}">${inc.prioridad?.nombre || '-'}</span>`;
+
+        return `
+        <tr>
+            <td>#${inc.id_incidente}</td>
+            <td>${inc.titulo}</td>
+            <td>${inc.categoria?.nombre || '-'}</td>
+            <td>${badgePrio}</td>
+            <td>${inc.estado?.nombre || '-'}</td>
+            <td>${inc.usuario?.nombre || '-'}</td>
+        </tr>
+        `;
+    }).join('');
 }
 
-// Ejecutar al cargar la página
-cargarIndicadores();
+// ==========================================
+// 4. INICIALIZAR
+// ==========================================
+window.scrollTo(0, 0);
+cargarDashboard();
