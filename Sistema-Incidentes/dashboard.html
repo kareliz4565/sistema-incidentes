@@ -14,7 +14,6 @@
         <div class="sidebar-logo">
             🛡️ <span>SGI Ciberseguridad</span>
         </div>
-
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item active">📊 Dashboard</a>
             <a href="incidentes.html" class="nav-item">🚨 Incidentes</a>
@@ -24,7 +23,6 @@
             <a href="activos.html" class="nav-item">💻 Activos</a>
             <a href="usuarios.html" class="nav-item">👥 Usuarios</a>
         </nav>
-
         <button onclick="cerrarSesion()" class="sidebar-logout">🚪 Cerrar Sesión</button>
     </aside>
 
@@ -73,10 +71,30 @@
         </section>
 
         <!-- Sección de Bienvenida -->
-        <section class="welcome-panel">
+        <section class="welcome-panel" style="margin-bottom: 25px;">
             <h2>Bienvenido/a al Sistema de Gestión de Incidentes 🛡️</h2>
             <p>Desde este panel puedes gestionar todos los incidentes de ciberseguridad de tu empresa. Utiliza el menú lateral para navegar entre los módulos.</p>
-            <p><strong>Tu rol:</strong> <span id="rol-usuario">Usuario</span></p>
+            <p><strong>Tu rol:</strong> <span id="rol-usuario" style="color: #38bdf8; font-weight: bold;">Usuario</span></p>
+        </section>
+
+        <!-- Tabla de Últimos Incidentes -->
+        <section class="table-section">
+            <h2>🕒 Últimos Incidentes Reportados</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Categoría</th>
+                        <th>Prioridad</th>
+                        <th>Estado</th>
+                        <th>Reportado por</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-ultimos-incidentes">
+                    <tr><td colspan="6" style="text-align:center;">Cargando incidentes...</td></tr>
+                </tbody>
+            </table>
         </section>
 
     </main>
